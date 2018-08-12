@@ -25,7 +25,7 @@ SECRET_KEY = 'qjxkyu%@228io163p85&tt#smrl6ye-*)s2z-s5+l%_p5)86rl'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['clydedatastruct.pythonanywhere.com', '127.0.0.1']
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
