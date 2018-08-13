@@ -11,15 +11,15 @@ class SohaeUserListView(generics.ListCreateAPIView):
 
 
 class SohaeDormListView(generics.ListAPIView):
-    queryset = models.SohaeDorm.objects.filter(is_active=True)
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     serializer_class = serializers.SohaeDormSerializer
+    queryset = models.SohaeDorm.objects.filter(is_active=True)
 
 
-# Create new dorm - for admins only
+# Create new dorm
 class SohaeDormCreateView(generics.CreateAPIView):
     serializer_class = serializers.SohaeDormSerializer
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 # View specific dorm info
