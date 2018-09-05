@@ -1,9 +1,7 @@
 from rest_framework import permissions
 from rest_framework import generics
-from django.db.models import FloatField, ExpressionWrapper, F, Func, Value
 from django.db.models.expressions import RawSQL
-from decimal import Decimal
-from math import cos, sin, asin, sqrt
+from django.db.models import F
 from . import models
 from . import serializers
 
@@ -64,40 +62,34 @@ class SohaeDormNearbyView(generics.ListAPIView):
     queryset = models.SohaeDorm.objects.filter(is_active=True)
 
     def get_queryset(self):
+        # Get latitude and longitude from user
         lat1 = self.kwargs['user_latitude']
         lon1 = self.kwargs['user_longitude']
-        lat2 = F('dorm_latitude')
-        lon2 = F('dorm_longitude')
-
-        template = '%(function)s(%(expressions)s AS FLOAT)'
-        fv1 = Func(lat2, function='CAST', template=template)
-        fv2 = Func(lon2, function='CAST', template=template)
-        dlat = fv1 - lat1
-        dlon = fv2 - lon1
 
         """
         WITHOUT use of any external library,
         using raw PostgreSQL and Haversine Formula
         http://en.wikipedia.org/wiki/Haversine_formula
         """
-        radius = 10000.0 / 1000.0
 
-        query = """SELECT (6367*acos(cos(radians({0}))
-            *cos(radians(dorm_latitude))
-            *cos(radians(dorm_longitude)-radians({1}))
-            +sin(radians({2}))*sin(radians(dorm_latitude))))
-            AS distance
-            FROM sohaegeum_sohaedorm""".format(float(lat1), float(lon1), float(lat1), radius)
-        params = (float(lat1), float(lon1), float(lat1), radius,)
+        """
+        STOP! Before running, add the following stored procedure!
+
+        CREATE FUNCTION sohae_calculate_distance5(u_lat float, u_lng float,
+            d_id integer) RETURNS float AS $$
+        SELECT (6367*acos(cos(radians(u_lat))
+               *cos(radians(dorm_latitude))
+               *cos(radians(dorm_longitude)
+               -radians(u_lng))
+               +sin(radians(u_lat))*sin(radians(dorm_latitude))))
+               AS distance FROM sohaegeum_sohaedorm WHERE id = d_id
+        $$ LANGUAGE SQL;
+        """
 
         return models.SohaeDorm.objects.annotate(
-            #distance=c * r
+            # Add the distance in KM as an attribute
             distance=RawSQL(
-                """SELECT (6367*acos(cos(radians(%s))
-                *cos(radians(F('dorm_latitude')))
-                *cos(radians(F('dorm_longitude'))-radians(%s))
-                +sin(radians(%s))*sin(radians(F('dorm_latitude')))))
-                AS distance
-                FROM sohaegeum_sohaedorm""",
-                params)
+                "SELECT sohae_calculate_distance5(%s, %s, %s) AS distance",
+                (lat1, lon1, 1)
+            )
         )

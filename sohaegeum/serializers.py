@@ -10,7 +10,7 @@ class SohaeUserSerializer(serializers.ModelSerializer):
 
 
 class SohaeDormSerializer(serializers.ModelSerializer):
-    distance = serializers.DecimalField(max_digits=9, decimal_places=6)
+    distance = serializers.DecimalField(max_digits=15, decimal_places=6)
 
     class Meta:
         model = models.SohaeDorm
