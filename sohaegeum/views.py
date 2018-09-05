@@ -24,7 +24,7 @@ class SohaeDormCreateView(generics.CreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
-# View specific dorm info
+# View specific dorm info - now with coordinates added!
 class SohaeDormInfoView(generics.ListAPIView):
     serializer_class = serializers.SohaeDormSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -35,7 +35,17 @@ class SohaeDormInfoView(generics.ListAPIView):
         the user as determined by the dorm ID portion of the URL.
         """
         dorm_id = self.kwargs['dorm_id']
-        return models.SohaeDorm.objects.filter(id=dorm_id, is_active=True)
+        # Get latitude and longitude from user
+        lat1 = self.kwargs['user_latitude']
+        lon1 = self.kwargs['user_longitude']
+
+        return models.SohaeDorm.objects.annotate(
+            # Add the distance in KM as an attribute
+            distance=RawSQL(
+                "SELECT sohae_calculate_distance5(%s, %s, %s) AS distance",
+                (lat1, lon1, dorm_id)
+            )
+        ).filter(id=dorm_id, is_active=True)
 
 
 # Edit specific dorm info - for admins only
