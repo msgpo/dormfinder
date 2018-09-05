@@ -1,7 +1,6 @@
 from rest_framework import permissions
 from rest_framework import generics
 from django.db.models.expressions import RawSQL
-from django.db.models import F
 from . import models
 from . import serializers
 
