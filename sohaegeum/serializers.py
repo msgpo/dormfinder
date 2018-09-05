@@ -10,8 +10,9 @@ class SohaeUserSerializer(serializers.ModelSerializer):
 
 
 class SohaeDormSerializer(serializers.ModelSerializer):
+    distance = serializers.DecimalField(max_digits=9, decimal_places=6)
 
     class Meta:
         model = models.SohaeDorm
         fields = ('id', 'dorm_name', 'dorm_type', 'dorm_latitude',
-            'dorm_longitude', 'is_active')
+            'dorm_longitude', 'is_active', 'distance')

@@ -10,4 +10,6 @@ urlpatterns = [
     path('dorms/info/<int:dorm_id>/', views.SohaeDormInfoView.as_view()),
     path('dorms/edit/<int:id>/', views.SohaeDormEditView.as_view()),
     path('dorms/delete/<int:id>/', views.SohaeDormDeleteView.as_view()),
+    path('dorms/nearby/<user_latitude>/<user_longitude>',
+        views.SohaeDormNearbyView.as_view()),
 ]
