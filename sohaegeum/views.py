@@ -1,6 +1,7 @@
 from rest_framework import permissions
 from rest_framework import generics
-from django.db.models.expressions import RawSQL
+from django.db.models import F, FloatField, IntegerField
+from django.db.models.expressions import RawSQL, ExpressionWrapper
 from . import models
 from . import serializers
 
@@ -74,6 +75,9 @@ class SohaeDormNearbyView(generics.ListAPIView):
         # Get latitude and longitude from user
         lat1 = self.kwargs['user_latitude']
         lon1 = self.kwargs['user_longitude']
+        lat2 = ExpressionWrapper(F('dorm_latitude'), output_field=FloatField())
+        lon2 = ExpressionWrapper(F('dorm_longitude'), output_field=FloatField())
+        dorm_id = ExpressionWrapper(F('id'), output_field=IntegerField())
 
         """
         WITHOUT use of any external library,
@@ -99,6 +103,6 @@ class SohaeDormNearbyView(generics.ListAPIView):
             # Add the distance in KM as an attribute
             distance=RawSQL(
                 "SELECT sohae_calculate_distance5(%s, %s, %s) AS distance",
-                (lat1, lon1, 1)
+                (lat1, lon1, dorm_id)
             )
-        )
+        ).filter(is_active=True)
